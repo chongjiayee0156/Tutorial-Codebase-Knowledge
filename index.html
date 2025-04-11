@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Codebase Tutorial Generator</title>
     <style>
-        /* Basic Reset & Apple-like Font Stack */
+        /* ... (keep existing CSS, including spinner) ... */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -48,30 +48,30 @@
         #results .status { font-weight: bold; margin-bottom: 10px; }
         #results .status.success { color: #34c759; }
         #results .status.error { color: #ff3b30; }
-
-        /* Simple Spinner CSS */
         #loading {
-            margin-top: 20px;
-            font-style: italic;
-            color: #6e6e73;
-            display: none; /* Hidden by default */
-            align-items: center; /* Center spinner and text */
-            justify-content: center; /* Center spinner and text */
-            gap: 10px; /* Space between text and spinner */
+            margin-top: 20px; font-style: italic; color: #6e6e73; display: none; align-items: center; justify-content: center; gap: 10px;
         }
         .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border-left-color: #007aff; /* Apple blue */
-            animation: spin 1s ease infinite;
-            display: inline-block; /* Needed for spinner */
+            border: 4px solid rgba(0, 0, 0, 0.1); width: 24px; height: 24px; border-radius: 50%; border-left-color: #007aff; animation: spin 1s ease infinite; display: inline-block;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Style for radio buttons */
+        .radio-group label {
+            display: inline-block; /* Place radio labels side-by-side */
+            margin-right: 15px;
+            font-weight: normal; /* Normal weight for radio options */
+            cursor: pointer;
         }
+        .radio-group input[type="radio"] {
+            margin-right: 5px;
+            cursor: pointer;
+        }
+         /* Hide/show based on selection */
+        .hidden-group {
+            display: none;
+        }
+
     </style>
 </head>
 <body>
@@ -80,39 +80,69 @@
         <h1>Generate Codebase Tutorial</h1>
 
         <form id="generate-form">
-            <!-- ... (form groups remain exactly the same) ... -->
-             <div class="form-group">
+
+            <!-- Source Type Selection -->
+            <div class="form-group">
+                <label>Source Type *</label>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="source_type" value="repo" checked> GitHub URL
+                    </label>
+                    <label>
+                        <input type="radio" name="source_type" value="dir"> Local Directory
+                    </label>
+                </div>
+            </div>
+
+            <!-- GitHub Repo URL Input -->
+            <div class="form-group" id="repo-url-group">
                 <label for="repo_url">GitHub Repository URL *</label>
                 <input type="url" id="repo_url" name="repo_url" placeholder="https://github.com/user/repo" required>
             </div>
-             <div class="form-group">
-                <label for="name">Project Name (Optional)</label>
-                <input type="text" id="name" name="name" placeholder="Derived from URL if blank">
+
+            <!-- Local Directory Path Input -->
+            <div class="form-group hidden-group" id="local-dir-group">
+                <label for="local_dir">Local Directory Path *</label>
+                <input type="text" id="local_dir" name="local_dir" placeholder="/path/to/your/project">
+                <span class="input-hint">Note: Server must have access to this path. Use with caution.</span>
             </div>
-             <div class="form-group">
+
+            <!-- Project Name -->
+            <div class="form-group">
+                <label for="name">Project Name (Optional)</label>
+                <input type="text" id="name" name="name" placeholder="Derived from source if blank">
+            </div>
+
+            <!-- GitHub Token (Only relevant for Repo) -->
+            <div class="form-group" id="token-group">
                 <label for="token">GitHub Token (Optional)</label>
                 <input type="password" id="token" name="token" placeholder="Use GITHUB_TOKEN env var if blank">
                 <span class="input-hint">Needed for private repos or to avoid rate limits.</span>
             </div>
-             <div class="form-group">
+
+            <!-- Common Options -->
+            <div class="form-group">
                 <label for="output">Output Directory Name (Optional)</label>
                 <input type="text" id="output" name="output" placeholder="Default: 'output'">
             </div>
-             <div class="form-group">
+
+            <div class="form-group">
                 <label for="include">Include Patterns (Optional)</label>
                 <textarea id="include" name="include" placeholder="*.py
 *.js
 src/*"></textarea>
                 <span class="input-hint">Enter one pattern per line. Defaults if blank.</span>
             </div>
-             <div class="form-group">
+
+            <div class="form-group">
                 <label for="exclude">Exclude Patterns (Optional)</label>
                 <textarea id="exclude" name="exclude" placeholder="tests/*
 docs/*
 *.log"></textarea>
                  <span class="input-hint">Enter one pattern per line. Defaults if blank.</span>
             </div>
-             <div class="form-group">
+
+            <div class="form-group">
                 <label for="max_size">Max File Size (Bytes, Optional)</label>
                 <input type="number" id="max_size" name="max_size" placeholder="Default: 100000" min="0">
             </div>
@@ -120,21 +150,20 @@ docs/*
             <button type="submit" id="submit-button">Generate Tutorial</button>
         </form>
 
-        <!-- Updated Loading Div -->
+        <!-- Loading Indicator -->
         <div id="loading">
             <span>Generating, please wait...</span>
             <div class="spinner"></div>
         </div>
 
-        <!-- Results only shown on error now -->
+        <!-- Results Area (for errors) -->
         <div id="results">
             <h3>Generation Failed</h3>
-            <p id="status-message" class="status error"></p> <!-- Only error shown -->
+            <p id="status-message" class="status error"></p>
             <div id="error-details" style="display: none;">
                  <h4>Error Details:</h4>
                 <pre id="error-content"></pre>
             </div>
-            <!-- Removed stdout/stderr blocks as we redirect on success -->
         </div>
     </div>
 
@@ -147,8 +176,46 @@ docs/*
         const errorContent = document.getElementById('error-content');
         const loadingDiv = document.getElementById('loading');
 
+        const sourceTypeRadios = document.querySelectorAll('input[name="source_type"]');
+        const repoUrlGroup = document.getElementById('repo-url-group');
+        const localDirGroup = document.getElementById('local-dir-group');
+        const tokenGroup = document.getElementById('token-group');
+        const repoUrlInput = document.getElementById('repo_url');
+        const localDirInput = document.getElementById('local_dir');
+        const tokenInput = document.getElementById('token');
+
+
         // --- Configuration ---
         const API_BASE_URL = 'http://localhost:8000'; // Backend URL
+
+        // --- UI Update Logic ---
+        function updateFormUI() {
+            const selectedType = document.querySelector('input[name="source_type"]:checked').value;
+
+            if (selectedType === 'repo') {
+                repoUrlGroup.classList.remove('hidden-group');
+                localDirGroup.classList.add('hidden-group');
+                tokenGroup.classList.remove('hidden-group'); // Show token field for repo
+
+                repoUrlInput.required = true;
+                localDirInput.required = false;
+                localDirInput.value = ''; // Clear the other input
+            } else { // selectedType === 'dir'
+                repoUrlGroup.classList.add('hidden-group');
+                localDirGroup.classList.remove('hidden-group');
+                tokenGroup.classList.add('hidden-group'); // Hide token field for local dir
+
+                repoUrlInput.required = false;
+                localDirInput.required = true;
+                repoUrlInput.value = ''; // Clear the other input
+                tokenInput.value = ''; // Clear token if switching away from repo
+            }
+        }
+
+        // --- Event Listeners ---
+        sourceTypeRadios.forEach(radio => {
+            radio.addEventListener('change', updateFormUI);
+        });
 
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -157,18 +224,27 @@ docs/*
 
             const formData = new FormData(form);
             const payload = {};
+            const selectedType = formData.get('source_type');
 
-            // Build payload (same as before)
-            payload.repo_url = formData.get('repo_url');
+            // Build payload based on selected source type
+            if (selectedType === 'repo') {
+                 payload.repo_url = formData.get('repo_url');
+                 // Only include token if source is repo and token has value
+                 if (formData.get('token')) payload.token = formData.get('token');
+            } else { // selectedType === 'dir'
+                 payload.local_dir = formData.get('local_dir');
+            }
+
+            // Add common fields (only if they have values)
             if (formData.get('name')) payload.name = formData.get('name');
-            if (formData.get('token')) payload.token = formData.get('token');
-            // Get output base, default to 'output' if empty
-            payload.output = formData.get('output') || 'output'; 
+            payload.output = formData.get('output') || 'output';
             if (formData.get('max_size')) payload.max_size = parseInt(formData.get('max_size'), 10);
             const includePatterns = formData.get('include').split('\n').map(p => p.trim()).filter(p => p);
             if (includePatterns.length > 0) payload.include = includePatterns;
             const excludePatterns = formData.get('exclude').split('\n').map(p => p.trim()).filter(p => p);
             if (excludePatterns.length > 0) payload.exclude = excludePatterns;
+
+            console.log("Sending payload:", payload); // Log payload for debugging
 
             try {
                 const response = await fetch(`${API_BASE_URL}/generate`, {
@@ -184,32 +260,24 @@ docs/*
                     console.log("Generation successful:", responseData);
                     const finalPath = responseData.final_output_directory;
 
-                    
                     if (finalPath) {
-                        // Construct URL relative to the current page's location
-                        // Replace backslashes just in case, ensure trailing slash isn't doubled
-                        const redirectUrl = `${finalPath.replace(/\\/g, '/')}/index.html`; 
-                        console.log(`Redirecting to: ${redirectUrl}`);
-                        
-                        // Redirect the browser
+                        const redirectUrl = `${finalPath.replace(/\\/g, '/')}/index.html`;
+                        console.log(`Attempting redirect to: ${redirectUrl}`);
+
+                        console.log("Executing redirect now.");
                         window.location.href = redirectUrl;
-                        
-                        // Optionally, show a brief success message before redirect if desired
-                        // statusMessage.textContent = `Success! Redirecting to ${redirectUrl}...`;
-                        // statusMessage.className = 'status success';
-                        // resultsDiv.style.display = 'block'; // Show temporary message
-                        // setTimeout(() => { window.location.href = redirectUrl; }, 1500); // Delay redirect
+
                     } else {
-                        // Handle case where path is missing in response (shouldn't happen)
-                         showError("Generation succeeded, but the output path was not returned by the API.");
+                        console.error("final_output_directory missing in response!");
+                        showError("Generation succeeded, but the output path was not returned by the API.");
+                         showLoading(false); // Hide loading if path is missing
                     }
-                    // No need to hide loading here, redirection takes over
 
                 } else {
                     // --- API ERROR ---
                     console.error('API Error Response:', responseData);
                     showError(
-                        responseData.detail?.error || `API Error (Status ${response.status})`,
+                        responseData.detail?.error || responseData.detail || `API Error (Status ${response.status})`,
                         responseData.detail // Pass the whole detail object for display
                     );
                      showLoading(false); // Hide loading on error
@@ -220,28 +288,27 @@ docs/*
                 console.error('Fetch Error:', error);
                 showError('Network error or failed to fetch from API.', error.message);
                  showLoading(false); // Hide loading on error
-            } 
-            // NOTE: No finally block needed to hide loading IF redirect happens on success.
-            // If you add a delay before redirect, move showLoading(false) to the finally block.
+            }
+            // Note: showLoading(false) is handled in error cases and implicitly on successful redirect
         });
 
+        // --- Helper Functions ---
         function showLoading(isLoading) {
-            // Use display: flex for loading to center spinner
-            loadingDiv.style.display = isLoading ? 'flex' : 'none'; 
+            loadingDiv.style.display = isLoading ? 'flex' : 'none';
             submitButton.disabled = isLoading;
         }
-        
+
         function showError(message, details = null) {
-             resultsDiv.style.display = 'block'; // Show results area for errors
-             statusMessage.textContent = message; // Main error message
-             statusMessage.className = 'status error'; // Set style
-             
+             resultsDiv.style.display = 'block';
+             statusMessage.textContent = message;
+             statusMessage.className = 'status error';
+
              if (details) {
-                // If details is an object, stringify it prettily
                 if (typeof details === 'object') {
-                    errorContent.textContent = JSON.stringify(details, null, 2);
+                    // If detail is an object, try to get a specific message or stringify
+                    errorContent.textContent = details.details || details.error || JSON.stringify(details, null, 2);
                 } else {
-                    errorContent.textContent = details; // If it's already a string
+                    errorContent.textContent = details;
                 }
                 errorDetailsDiv.style.display = 'block';
              } else {
@@ -257,6 +324,9 @@ docs/*
             errorContent.textContent = '';
             errorDetailsDiv.style.display = 'none';
         }
+
+        // --- Initial UI Setup ---
+        updateFormUI(); // Set initial state based on default radio selection
 
     </script>
 

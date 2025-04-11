@@ -103,6 +103,8 @@ This is a tutorial project of [Pocket Flow](https://github.com/The-Pocket/Pocket
       
 The application will crawl the repository, analyze the codebase structure, generate tutorial content, and save the output in the specified directory (default: ./output).
 
+after generating output in markdown files, they will be converted to html files. user accessing through UI `index.html` will be directed to the generated tutorial websites.
+
 
 ## 💡 Development Tutorial
 
