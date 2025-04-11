@@ -2,8 +2,10 @@ import os
 import yaml
 from pocketflow import Node, BatchNode
 from utils.crawl_github_files import crawl_github_files
-from utils.call_llm import call_llm 
+from utils.call_llm import call_llm # Assuming you have this utility
 from utils.crawl_local_files import crawl_local_files
+from converter.md_to_html import convert_all_md_to_html
+
 
 # Helper to get content for specific file indices
 def get_content_for_indices(files_data, indices):
@@ -659,3 +661,5 @@ class CombineTutorial(Node):
     def post(self, shared, prep_res, exec_res):
         shared["final_output_dir"] = exec_res # Store the output path
         print(f"\nTutorial generation complete! Files are in: {exec_res}")
+        convert_all_md_to_html(exec_res) # Convert all Markdown files to HTML
+        

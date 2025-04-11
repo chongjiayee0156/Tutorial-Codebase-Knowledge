@@ -10,6 +10,7 @@ build/
 out/
 *.pyc
 __pycache__/
+output/
 
 # Environment files
 .env
@@ -22,6 +23,7 @@ __pycache__/
 # Python virtual environments
 .venv/
 venv/
+tutorial-codebase-knowledge-venv/
 
 # IDE - VSCode
 .vscode/*

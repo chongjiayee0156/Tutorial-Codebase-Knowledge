@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codebase Tutorial Generator</title>
+    <style>
+        /* Basic Reset & Apple-like Font Stack */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: #f5f5f7; color: #1d1d1f; line-height: 1.5;
+            display: flex; justify-content: center; align-items: flex-start;
+            min-height: 100vh; padding: 40px 20px;
+        }
+        .container {
+            background-color: #ffffff; padding: 35px 40px; border-radius: 18px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); max-width: 600px;
+            width: 100%; text-align: center;
+        }
+        h1 { font-size: 1.8em; font-weight: 600; margin-bottom: 30px; color: #000000; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; font-weight: 500; margin-bottom: 8px; font-size: 0.95em; color: #333; }
+        input[type="text"], input[type="url"], input[type="password"], input[type="number"], textarea {
+            width: 100%; padding: 12px 15px; border: 1px solid #d2d2d7; border-radius: 10px;
+            font-size: 1em; background-color: #f5f5f7; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        input:focus, textarea:focus { outline: none; border-color: #007aff; box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2); }
+        textarea { min-height: 80px; resize: vertical; font-family: inherit; }
+        .input-hint { font-size: 0.8em; color: #6e6e73; margin-top: 5px; display: block; }
+        button {
+            background-color: #007aff; color: white; border: none; padding: 14px 25px; border-radius: 10px;
+            font-size: 1.05em; font-weight: 500; cursor: pointer; transition: background-color 0.2s ease, transform 0.1s ease;
+            display: inline-block; margin-top: 10px;
+        }
+        button:hover { background-color: #005ecf; }
+        button:active { transform: scale(0.98); }
+        button:disabled { background-color: #c7c7cc; cursor: not-allowed; }
+        #results {
+            margin-top: 30px; text-align: left; background-color: #f5f5f7; padding: 20px;
+            border-radius: 10px; border: 1px solid #e5e5e5; display: none; word-wrap: break-word; white-space: pre-wrap;
+        }
+        #results h3 { margin-bottom: 15px; font-weight: 600; }
+        #results pre { background-color: #e9e9eb; padding: 15px; border-radius: 8px; margin-top: 10px; overflow-x: auto;
+            font-family: "SF Mono", SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.9em; color: #1d1d1f;
+        }
+        #results .status { font-weight: bold; margin-bottom: 10px; }
+        #results .status.success { color: #34c759; }
+        #results .status.error { color: #ff3b30; }
+
+        /* Simple Spinner CSS */
+        #loading {
+            margin-top: 20px;
+            font-style: italic;
+            color: #6e6e73;
+            display: none; /* Hidden by default */
+            align-items: center; /* Center spinner and text */
+            justify-content: center; /* Center spinner and text */
+            gap: 10px; /* Space between text and spinner */
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border-left-color: #007aff; /* Apple blue */
+            animation: spin 1s ease infinite;
+            display: inline-block; /* Needed for spinner */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Generate Codebase Tutorial</h1>
+
+        <form id="generate-form">
+            <!-- ... (form groups remain exactly the same) ... -->
+             <div class="form-group">
+                <label for="repo_url">GitHub Repository URL *</label>
+                <input type="url" id="repo_url" name="repo_url" placeholder="https://github.com/user/repo" required>
+            </div>
+             <div class="form-group">
+                <label for="name">Project Name (Optional)</label>
+                <input type="text" id="name" name="name" placeholder="Derived from URL if blank">
+            </div>
+             <div class="form-group">
+                <label for="token">GitHub Token (Optional)</label>
+                <input type="password" id="token" name="token" placeholder="Use GITHUB_TOKEN env var if blank">
+                <span class="input-hint">Needed for private repos or to avoid rate limits.</span>
+            </div>
+             <div class="form-group">
+                <label for="output">Output Directory Name (Optional)</label>
+                <input type="text" id="output" name="output" placeholder="Default: 'output'">
+            </div>
+             <div class="form-group">
+                <label for="include">Include Patterns (Optional)</label>
+                <textarea id="include" name="include" placeholder="*.py
+*.js
+src/*"></textarea>
+                <span class="input-hint">Enter one pattern per line. Defaults if blank.</span>
+            </div>
+             <div class="form-group">
+                <label for="exclude">Exclude Patterns (Optional)</label>
+                <textarea id="exclude" name="exclude" placeholder="tests/*
+docs/*
+*.log"></textarea>
+                 <span class="input-hint">Enter one pattern per line. Defaults if blank.</span>
+            </div>
+             <div class="form-group">
+                <label for="max_size">Max File Size (Bytes, Optional)</label>
+                <input type="number" id="max_size" name="max_size" placeholder="Default: 100000" min="0">
+            </div>
+
+            <button type="submit" id="submit-button">Generate Tutorial</button>
+        </form>
+
+        <!-- Updated Loading Div -->
+        <div id="loading">
+            <span>Generating, please wait...</span>
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Results only shown on error now -->
+        <div id="results">
+            <h3>Generation Failed</h3>
+            <p id="status-message" class="status error"></p> <!-- Only error shown -->
+            <div id="error-details" style="display: none;">
+                 <h4>Error Details:</h4>
+                <pre id="error-content"></pre>
+            </div>
+            <!-- Removed stdout/stderr blocks as we redirect on success -->
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('generate-form');
+        const submitButton = document.getElementById('submit-button');
+        const resultsDiv = document.getElementById('results');
+        const statusMessage = document.getElementById('status-message');
+        const errorDetailsDiv = document.getElementById('error-details');
+        const errorContent = document.getElementById('error-content');
+        const loadingDiv = document.getElementById('loading');
+
+        // --- Configuration ---
+        const API_BASE_URL = 'http://localhost:8000'; // Backend URL
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            clearResults();
+            showLoading(true); // Show loading indicator
+
+            const formData = new FormData(form);
+            const payload = {};
+
+            // Build payload (same as before)
+            payload.repo_url = formData.get('repo_url');
+            if (formData.get('name')) payload.name = formData.get('name');
+            if (formData.get('token')) payload.token = formData.get('token');
+            // Get output base, default to 'output' if empty
+            payload.output = formData.get('output') || 'output'; 
+            if (formData.get('max_size')) payload.max_size = parseInt(formData.get('max_size'), 10);
+            const includePatterns = formData.get('include').split('\n').map(p => p.trim()).filter(p => p);
+            if (includePatterns.length > 0) payload.include = includePatterns;
+            const excludePatterns = formData.get('exclude').split('\n').map(p => p.trim()).filter(p => p);
+            if (excludePatterns.length > 0) payload.exclude = excludePatterns;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const responseData = await response.json();
+
+                if (response.ok) {
+                    // --- SUCCESS ---
+                    console.log("Generation successful:", responseData);
+                    const finalPath = responseData.final_output_directory;
+
+                    
+                    if (finalPath) {
+                        // Construct URL relative to the current page's location
+                        // Replace backslashes just in case, ensure trailing slash isn't doubled
+                        const redirectUrl = `${finalPath.replace(/\\/g, '/')}/index.html`; 
+                        console.log(`Redirecting to: ${redirectUrl}`);
+                        
+                        // Redirect the browser
+                        window.location.href = redirectUrl;
+                        
+                        // Optionally, show a brief success message before redirect if desired
+                        // statusMessage.textContent = `Success! Redirecting to ${redirectUrl}...`;
+                        // statusMessage.className = 'status success';
+                        // resultsDiv.style.display = 'block'; // Show temporary message
+                        // setTimeout(() => { window.location.href = redirectUrl; }, 1500); // Delay redirect
+                    } else {
+                        // Handle case where path is missing in response (shouldn't happen)
+                         showError("Generation succeeded, but the output path was not returned by the API.");
+                    }
+                    // No need to hide loading here, redirection takes over
+
+                } else {
+                    // --- API ERROR ---
+                    console.error('API Error Response:', responseData);
+                    showError(
+                        responseData.detail?.error || `API Error (Status ${response.status})`,
+                        responseData.detail // Pass the whole detail object for display
+                    );
+                     showLoading(false); // Hide loading on error
+                }
+
+            } catch (error) {
+                // --- NETWORK OR OTHER FETCH ERROR ---
+                console.error('Fetch Error:', error);
+                showError('Network error or failed to fetch from API.', error.message);
+                 showLoading(false); // Hide loading on error
+            } 
+            // NOTE: No finally block needed to hide loading IF redirect happens on success.
+            // If you add a delay before redirect, move showLoading(false) to the finally block.
+        });
+
+        function showLoading(isLoading) {
+            // Use display: flex for loading to center spinner
+            loadingDiv.style.display = isLoading ? 'flex' : 'none'; 
+            submitButton.disabled = isLoading;
+        }
+        
+        function showError(message, details = null) {
+             resultsDiv.style.display = 'block'; // Show results area for errors
+             statusMessage.textContent = message; // Main error message
+             statusMessage.className = 'status error'; // Set style
+             
+             if (details) {
+                // If details is an object, stringify it prettily
+                if (typeof details === 'object') {
+                    errorContent.textContent = JSON.stringify(details, null, 2);
+                } else {
+                    errorContent.textContent = details; // If it's already a string
+                }
+                errorDetailsDiv.style.display = 'block';
+             } else {
+                 errorDetailsDiv.style.display = 'none';
+                 errorContent.textContent = '';
+             }
+        }
+
+        function clearResults() {
+            resultsDiv.style.display = 'none';
+            statusMessage.textContent = '';
+            statusMessage.className = 'status';
+            errorContent.textContent = '';
+            errorDetailsDiv.style.display = 'none';
+        }
+
+    </script>
+
+</body>
+</html>
