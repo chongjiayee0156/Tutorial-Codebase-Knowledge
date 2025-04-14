@@ -7,7 +7,7 @@ Forking & utilizing the existing repo of ai agent to take in <github_repo> and p
 
 This original AI Agent is created by another AI Agent named PocketFlow through Cursor.
 
-# Demo after my modification:
+# Demo after my addition:
 [<img width="895" alt="image" src="https://github.com/user-attachments/assets/685ede28-f072-43bb-8b30-d4db801db5ba" />](https://youtu.be/-ZxK3J3SiPk)
 
 > *Ever stared at a new codebase written by others feeling completely lost? This tutorial shows you how to build an AI agent that analyzes GitHub repositories and creates beginner-friendly tutorials explaining exactly how the code works.*
