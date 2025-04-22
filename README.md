@@ -8,10 +8,8 @@ Forking & utilizing the existing repo from the pocket flow, in which they used a
 This original AI Agent is created by another AI Agent named PocketFlow through Cursor.
 
 # Demo after my addition:
-[<img width="895" alt="image" src="https://github.com/user-attachments/assets/685ede28-f072-43bb-8b30-d4db801db5ba" />](https://youtu.be/-ZxK3J3SiPk)
-
 <p align="center">
   <a href="https://youtu.be/-ZxK3J3SiPk">
-    <img src="https://github.com/user-attachments/assets/685ede28-f072-43bb-8b30-d4db801db5ba" alt="cover photo" style="cursor: pointer;"/>
+    <img width="895" src="https://github.com/user-attachments/assets/685ede28-f072-43bb-8b30-d4db801db5ba" alt="cover photo" style="cursor: pointer;"/>
   </a>
 </p>
