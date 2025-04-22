@@ -3,7 +3,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 # Description
-Forking & utilizing the existing repo of ai agent to take in <github_repo> and produce Markdown files, I revamped it by adding a frontend that accepts possible cli command and pass the arguments to backend API. On top of that, I added a markdown library to convert all md files to html, including the embedded links. I also added a package of my own to parse mermaid diagram in MD to html, since this feature is not provided as built-in in markdown library, and other 3rd party libraries are having param issues with the update of markdown library.
+Forking & utilizing the existing repo from the pocket flow, in which they used ai agent to take in <github_repo> and produce Markdown files, I revamped it by adding a frontend that accepts github repo url pass the arguments to backend API. On top of that, I added a markdown parser library to convert all md files to html, including the embedded links. I also added a package of my own to parse mermaid diagram in MD to html, since this feature is not provided as built-in in `markdown` library, and other 3rd party libraries of parsing mermaid diagram are having param issues following the update of markdown library.
 
 This original AI Agent is created by another AI Agent named PocketFlow through Cursor.
 
